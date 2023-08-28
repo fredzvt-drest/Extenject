@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ModestTree;
+using UnityEngine;
 #if ZEN_SIGNALS_ADD_UNIRX
 using UniRx;
 #endif
@@ -228,21 +229,9 @@ namespace Zenject
         }
 #endif
 
-        public void SubscribeId<TSignal>(object identifier, Action callback)
-        {
-            Action<object> wrapperCallback = args => callback();
-            SubscribeInternal(typeof(TSignal), identifier, callback, wrapperCallback);
-        }
-
         public void Subscribe<TSignal>(Action callback)
         {
             SubscribeId<TSignal>(null, callback);
-        }
-
-        public void SubscribeId<TSignal>(object identifier, Action<TSignal> callback)
-        {
-            Action<object> wrapperCallback = args => callback((TSignal)args);
-            SubscribeInternal(typeof(TSignal), identifier, callback, wrapperCallback);
         }
 
         public void Subscribe<TSignal>(Action<TSignal> callback)
@@ -250,14 +239,39 @@ namespace Zenject
             SubscribeId<TSignal>(null, callback);
         }
 
-        public void SubscribeId(Type signalType, object identifier, Action<object> callback)
-        {
-            SubscribeInternal(signalType, identifier, callback, callback);
-        }
-
         public void Subscribe(Type signalType, Action<object> callback)
         {
             SubscribeId(signalType, null, callback);
+        }
+
+        public void SubscribeId<TSignal>(object identifier, Action callback)
+        {
+            Action<object> wrapperCallback = args =>
+            {
+                Debug.Log($"Method {callback.Method.DeclaringType?.Name}.{callback.Method.Name} called in response to signal {typeof(TSignal).Name}.");
+                callback();
+            };
+            SubscribeInternal(typeof(TSignal), identifier, callback, wrapperCallback);
+        }
+
+        public void SubscribeId<TSignal>(object identifier, Action<TSignal> callback)
+        {
+            Action<object> wrapperCallback = args =>
+            {
+                Debug.Log($"Method {callback.Method.DeclaringType?.Name}.{callback.Method.Name} called in response to signal {typeof(TSignal).Name}.");
+                callback((TSignal)args);
+            };
+            SubscribeInternal(typeof(TSignal), identifier, callback, wrapperCallback);
+        }
+
+        public void SubscribeId(Type signalType, object identifier, Action<object> callback)
+        {
+            Action<object> wrapperCallback = args =>
+            {
+                Debug.Log($"Method {callback.Method.DeclaringType?.Name}.{callback.Method.Name} called in response to signal {signalType.Name}.");
+                callback(args);
+            };
+            SubscribeInternal(signalType, identifier, callback, wrapperCallback);
         }
 
         public void UnsubscribeId<TSignal>(object identifier, Action callback)

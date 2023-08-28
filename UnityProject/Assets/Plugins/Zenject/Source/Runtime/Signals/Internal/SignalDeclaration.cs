@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ModestTree;
+using UnityEngine;
 #if ZEN_SIGNALS_ADD_UNIRX
 using UniRx;
 #endif
@@ -121,6 +122,8 @@ namespace Zenject
                 }
             }
 
+            Debug.Log($"Fired signal '{signal.GetType()}'!");
+            
             for (int i = 0; i < subscriptions.Count; i++)
             {
                 var subscription = subscriptions[i];
